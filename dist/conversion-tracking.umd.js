@@ -1,0 +1,1 @@
+(function(n,e){typeof exports=="object"&&typeof module<"u"?module.exports=e():typeof define=="function"&&define.amd?define(e):(n=typeof globalThis<"u"?globalThis:n||self,n.ConversionTracking=e())})(this,function(){"use strict";return(()=>{let e={};return{land:()=>{e.landedAt=new Date().toISOString(),console.log("Landing recorded at:",e.landedAt)}}})()});

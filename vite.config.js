@@ -6,6 +6,7 @@ export default defineConfig({
             entry: './index.js',
             name: 'ConversionTracking',
             fileName: (format) => `conversion-tracking.${format}.js`,
+            formats: ['es', 'umd', 'iife'],
         },
     },
 });

@@ -1,17 +1,26 @@
-export const Log = (() => {
-    // Log: Debug logger
+export const Logger = (() => {
+
+    let debugMode = __DEBUG__;
+
+    // Set debug mode dynamically
+    const setDebug = (mode) => {
+        debugMode = !!mode;
+    };
+
+    // Log: Debug logger (logs only if debugMode is enabled)
     const debug = (...messages) => {
-        if (__DEBUG__) {
+        if (debugMode) {
             console.log("[ConversionTracking DEBUG]:", ...messages);
         }
     };
 
     const warn = (...messages) => {
-        if (__DEBUG__) {
+        if (debugMode) {
             console.warn("[ConversionTracking WARNING]:", ...messages);
         }
     };
 
+    // Errors always log regardless of debug mode
     const error = (...messages) => {
         console.error("[ConversionTracking ERROR]:", ...messages);
     };
@@ -20,5 +29,6 @@ export const Log = (() => {
         debug,
         warn,
         error,
+        setDebug,
     };
 })();

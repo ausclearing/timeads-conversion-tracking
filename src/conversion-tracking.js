@@ -1,6 +1,6 @@
-import {Log} from "./log";
 import {Encryption} from './encryption';
 import {Utility} from "./utility";
+import {Logger} from './logger';
 
 // Event type constants
 const Event = {
@@ -9,13 +9,33 @@ const Event = {
     VIEW_ITEM: 'view_item'
 };
 
-const ConversionTracking = (() => {
+const ConversionTracking = ((config = {
+    debug: __DEBUG__,
+    sessionIdParam: __SESSION_ID_PARAM__,
+    endPoint: __END_POINT__,
+}) => {
+
+    // Set debug mode dynamically
+    Logger.setDebug(config.debug);
 
     let userData = {};
 
+    const setConfig = (newConfig) => {
+        config = {
+            debug: newConfig.debug !== undefined ? newConfig.debug : config.debug,
+            sessionIdParam: newConfig.sessionIdParam !== undefined ? newConfig.sessionIdParam : config.sessionIdParam,
+            endPoint: newConfig.endPoint !== undefined ? newConfig.endPoint : config.endPoint,
+        };
+
+        Utility.setConfig(config);
+        Logger.setDebug(config.debug);
+
+        Logger.debug("Configuration updated:", config);
+    };
+
     // Utility: Send data to server
     const postToServer = (data) => {
-        fetch(__END_POINT__, {
+        fetch(config.endPoint, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -24,32 +44,32 @@ const ConversionTracking = (() => {
         })
             .then((response) => response.json())
             .then((data) => {
-                Log.debug("Data sent to server:", data);
+                Logger.debug("Data sent to server:", data);
             })
             .catch((error) => {
-                Log.debug("Error sending data to server:", error);
+                Logger.debug("Error sending data to server:", error);
             });
     };
 
     // Utility: Parse session id from URL query parameters
     const getSessionIdFromURL = () => {
         const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get(__SESSION_ID_PARAM__) || null;
+        return urlParams.get(config.sessionIdParam) || null;
     };
 
     // Utility: Pre flight checks
     const initialize = () => {
-        Log.debug("Initializing ConversionTracking...");
+        Logger.debug("Initializing ConversionTracking...");
 
-        Log.debug("Checking cookies support...");
+        Logger.debug("Checking cookies support...");
         if (!Utility.checkCookieSupport()) {
-            Log.error("Cookies are not supported. Conversion tracking may not work as expected.");
+            Logger.error("Cookies are not supported. Conversion tracking may not work as expected.");
             throw new Error("Cookies are not supported.");
         }
 
-        Log.debug("Checking localStorage support...");
+        Logger.debug("Checking localStorage support...");
         if (!Utility.checkLocalStorageSupport()) {
-            Log.error("LocalStorage is not supported. Conversion tracking may not work as expected.");
+            Logger.error("LocalStorage is not supported. Conversion tracking may not work as expected.");
             throw new Error("LocalStorage is not supported.");
         }
     };
@@ -107,35 +127,36 @@ const ConversionTracking = (() => {
         initialize();
 
         userData.landedAt = new Date().toISOString();
-        Log.debug("Landing recorded at:", userData.landedAt, "Session ID:", userData.sessionId);
 
         // Get session id from URL
         const sessionId = getSessionIdFromURL();
         if (!sessionId) { // If session id not found in URL, do nothing
-            Log.warn("Session ID not found in URL query parameters.");
+            Logger.warn("Session ID not found in URL query parameters.");
             return;
         }
 
         // Add session id to user data
         userData.sessionId = sessionId;
 
+        Logger.debug("Landing recorded at:", userData.landedAt, "Session ID:", userData.sessionId);
+
         // Generate a transaction ID
         userData.transactionId = generateTransactionId();
-        Log.debug("Generated transaction ID:", userData.transactionId);
+        Logger.debug("Generated transaction ID:", userData.transactionId);
 
         // Generate a key
         const key = await Encryption.generateKey();
-        Log.debug("Generated key:", key);
+        Logger.debug("Generated key:", key);
 
         // Store the key in cookies
         if (!await Utility.storeInCookies(key)) {
-            Log.error("Error storing key in cookies.");
+            Logger.error("Error storing key in cookies.");
             return;
         }
 
         // Store data in localStorage
         if (!await Utility.storeInLocalStorage(key, userData)) {
-            Log.error("Error storing data in localStorage.");
+            Logger.error("Error storing data in localStorage.");
             return;
         }
 
@@ -153,27 +174,27 @@ const ConversionTracking = (() => {
 
         // Validate transaction ID
         if (typeof transactionId !== "string" || transactionId.length === 0 || transactionId.length > 200) {
-            Log.error("Invalid transaction ID");
+            Logger.error("Invalid transaction ID");
             return;
         }
 
         // Get session id from LocalStorage
         const key = await Utility.retrieveFromCookies();
         if (!key) {
-            Log.error("Error retrieving key from cookies.");
+            Logger.error("Error retrieving key from cookies.");
             return;
         }
 
         // Retrieve data from LocalStorage
         const userData = await Utility.retrieveFromLocalStorage(key);
         if (!userData) {
-            Log.error("Error retrieving data from LocalStorage.");
+            Logger.error("Error retrieving data from LocalStorage.");
             return;
         }
 
         const {isValid, errors} = validateAdditionalData(additionalData);
         if (!isValid) {
-            Log.error("Validation errors:", errors);
+            Logger.error("Validation errors:", errors);
             return;
         }
 
@@ -184,26 +205,16 @@ const ConversionTracking = (() => {
             sessionId: userData.sessionId,
         };
 
-        Log.debug("Event tracked:", event);
+        Logger.debug("Event tracked:", event);
         postToServer(event);
-    };
-
-    const test = () => {
-
-        Utility.storeInCookies({name: "John Doe"});
-
-        // Get session from local storage
-        const key = Utility.retrieveFromCookies();
-        console.log(key);
-
     };
 
     // Expose public methods
     return {
         land,
         trackEvent,
-        test,
         Event,
+        setConfig,
     };
 })();
 

@@ -1,10 +1,17 @@
 import {Encryption} from "./encryption.js";
-import {Log} from "./log";
+import {Logger} from "./logger";
 
-export const Utility = (() => {
+export const Utility = ((config = {
+    cookieName: "jdiiwkssl",
+    localStorageKey: "lsoqejaiked",
+}) => {
 
-    const __COOKIE_NAME__ = "jdiiwkssl";
-    const __LOCAL_STORAGE_KEY__ = "lsoqejaiked";
+    const setConfig = (newConfig) => {
+        config = {
+            cookieName: newConfig.cookieName !== undefined ? newConfig.cookieName : config.cookieName,
+            localStorageKey: newConfig.localStorageKey !== undefined ? newConfig.localStorageKey : config.localStorageKey,
+        }
+    }
 
     const storeInLocalStorage = async (key, data) => {
         try {
@@ -12,12 +19,12 @@ export const Utility = (() => {
             const encryptedData = await Encryption.encrypt(key, data);
 
             // Save the encrypted data in localStorage
-            localStorage.setItem(__LOCAL_STORAGE_KEY__, JSON.stringify(encryptedData));
-            Log.debug("Data stored in localStorage.");
+            localStorage.setItem(config.localStorageKey, JSON.stringify(encryptedData));
+            Logger.debug("Data stored in localStorage.");
 
             return true;
         } catch (error) {
-            Log.error("Error storing data in localStorage:", error);
+            Logger.error("Error storing data in localStorage:", error);
 
             return false;
         }
@@ -26,24 +33,24 @@ export const Utility = (() => {
     const retrieveFromLocalStorage = async (key) => {
         try {
             // Get the encrypted data from localStorage
-            const encryptedData = JSON.parse(localStorage.getItem(__LOCAL_STORAGE_KEY__));
+            const encryptedData = JSON.parse(localStorage.getItem(config.localStorageKey));
             if (!encryptedData) {
-                Log.debug("No data found in localStorage.");
+                Logger.debug("No data found in localStorage.");
                 return null;
             }
 
             // Decrypt the data
             const decryptedData = await Encryption.decrypt(key, encryptedData);
-            Log.debug("Data retrieved and decrypted from localStorage.");
+            Logger.debug("Data retrieved and decrypted from localStorage.");
             return decryptedData;
         } catch (error) {
-            Log.error("Error retrieving data from localStorage:", error);
+            Logger.error("Error retrieving data from localStorage:", error);
             return null;
         }
     };
 
     const storeInCookies = async (data) => {
-        const startsWith = __COOKIE_NAME__ + "=";
+        const startsWith = config.cookieName + "=";
         try {
             // Save the encrypted data as a Base64 string in cookies
             document.cookie = `${startsWith}${btoa(JSON.stringify(data))}; ` +
@@ -51,11 +58,11 @@ export const Utility = (() => {
                 `SameSite=Strict; ` +
                 `path=/;`;          // No 'HttpOnly'
 
-            Log.debug("Data stored in cookies.");
+            Logger.debug("Data stored in cookies.");
 
             return true;
         } catch (error) {
-            Log.error("Error storing data in cookies:", error);
+            Logger.error("Error storing data in cookies:", error);
 
             return false;
         }
@@ -65,20 +72,20 @@ export const Utility = (() => {
     const retrieveFromCookies = async () => {
         try {
             // Get the cookie value
-            const startsWith = __COOKIE_NAME__ + "=";
+            const startsWith = config.cookieName + "=";
             const cookieString = document.cookie
                 .split("; ")
                 .find((row) => row.startsWith(startsWith));
             if (!cookieString) {
-                Log.debug("No data found in cookies.");
+                Logger.debug("No data found in cookies.");
                 return null;
             }
 
             const data = JSON.parse(atob(cookieString.split("=")[1]));
-            Log.debug("Data retrieved and decrypted from cookies.");
+            Logger.debug("Data retrieved and decrypted from cookies.");
             return data;
         } catch (error) {
-            Log.error("Error retrieving data from cookies:", error);
+            Logger.error("Error retrieving data from cookies:", error);
             return null;
         }
     };
@@ -105,7 +112,7 @@ export const Utility = (() => {
             localStorage.removeItem(testKey);
             return true;
         } catch (error) {
-            Log.error("Error checking localStorage support:", error);
+            Logger.error("Error checking localStorage support:", error);
             return false;
         }
     };
@@ -118,5 +125,6 @@ export const Utility = (() => {
         retrieveFromCookies,
         checkCookieSupport,
         checkLocalStorageSupport,
+        setConfig,
     };
 })();

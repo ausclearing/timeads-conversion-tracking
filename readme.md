@@ -50,7 +50,7 @@ ConversionTracking.land();
 
 Use `track()` to log specific user actions:
 
-- `transaction_id` *(mandatory)*: a unique ID for each transaction. If the same ID is used again, existing
+- `transactionId` *(mandatory)*: a unique ID for each transaction. If the same ID is used again, existing
   values will be updated.
 - `event` *(mandatory)*: any string, minimum 5 characters. If using `ConversionTracking.EVENTS.PURCHASE`, a value is
   required.

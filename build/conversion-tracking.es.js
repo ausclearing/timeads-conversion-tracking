@@ -162,7 +162,7 @@ const k = /* @__PURE__ */ (() => {
   VIEW_ITEM: "view_item"
 }, v = ((n = {
   debug: !1,
-  sessionIdParam: "naugladur",
+  sessionIdParam: "thurin",
   endPoint: "http://127.0.0.1/api/track"
 }) => {
   t.setDebug(n.debug);
@@ -201,13 +201,13 @@ const k = /* @__PURE__ */ (() => {
   };
   return {
     land: async () => {
-      c(), i.landedAt = (/* @__PURE__ */ new Date()).toISOString();
+      c(), i.landed_at = (/* @__PURE__ */ new Date()).toISOString();
       const e = p();
       if (!e) {
         t.warn("Session ID not found in URL query parameters.");
         return;
       }
-      i.sessionId = e, t.debug("Landing recorded at:", i.landedAt, "Session ID:", i.sessionId), i.transactionId = g(), t.debug("Generated transaction ID:", i.transactionId);
+      i.session_id = e, t.debug("Landing recorded at:", i.landed_at, "Session ID:", i.session_id), i.transaction_id = g(), t.debug("Generated transaction ID:", i.transaction_id);
       const o = await k.generateKey();
       if (t.debug("Generated key:", o), !await d.storeInCookies(o)) {
         t.error("Error storing key in cookies.");
@@ -246,8 +246,8 @@ const k = /* @__PURE__ */ (() => {
       const h = {
         ...o,
         transaction_id: e,
-        timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-        sessionId: S.sessionId
+        landed_at: (/* @__PURE__ */ new Date()).toISOString(),
+        session_id: S.session_id
       };
       t.debug("Event tracked:", h), l(h);
     },

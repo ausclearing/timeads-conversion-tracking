@@ -126,7 +126,7 @@ const ConversionTracking = ((config = {
     const land = async () => {
         initialize();
 
-        userData.landedAt = new Date().toISOString();
+        userData.landed_at = new Date().toISOString();
 
         // Get session id from URL
         const sessionId = getSessionIdFromURL();
@@ -136,13 +136,13 @@ const ConversionTracking = ((config = {
         }
 
         // Add session id to user data
-        userData.sessionId = sessionId;
+        userData.session_id = sessionId;
 
-        Logger.debug("Landing recorded at:", userData.landedAt, "Session ID:", userData.sessionId);
+        Logger.debug("Landing recorded at:", userData.landed_at, "Session ID:", userData.session_id);
 
         // Generate a transaction ID
-        userData.transactionId = generateTransactionId();
-        Logger.debug("Generated transaction ID:", userData.transactionId);
+        userData.transaction_id = generateTransactionId();
+        Logger.debug("Generated transaction ID:", userData.transaction_id);
 
         // Generate a key
         const key = await Encryption.generateKey();
@@ -201,8 +201,8 @@ const ConversionTracking = ((config = {
         const event = {
             ...additionalData,
             transaction_id: transactionId,
-            timestamp: new Date().toISOString(),
-            sessionId: userData.sessionId,
+            landed_at: new Date().toISOString(),
+            session_id: userData.session_id,
         };
 
         Logger.debug("Event tracked:", event);

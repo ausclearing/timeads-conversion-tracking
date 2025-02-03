@@ -68,7 +68,7 @@ ConversionTracking.track('tx_12345', {
 Purchase event example:
 
 ```javascript
-ConversionTracking.trackEvent("tx_12345", {
+ConversionTracking.track("tx_12345", {
     event: ConversionTracking.Event.PURCHASE,
     value: 99.99,
     tags: ["electronics", "promo"]
@@ -78,7 +78,7 @@ ConversionTracking.trackEvent("tx_12345", {
 Signups event example:
 
 ```javascript
-ConversionTracking.trackEvent("tx_67890", {
+ConversionTracking.track("tx_67890", {
     event: ConversionTracking.Event.SIGNUP,
     tags: ["newsletter"]
 });

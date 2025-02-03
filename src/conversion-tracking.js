@@ -169,7 +169,7 @@ const ConversionTracking = ((config = {
     };
 
     // Public function to track custom events
-    const trackEvent = async (transactionId, additionalData = {}) => {
+    const track = async (transactionId, additionalData = {}) => {
         initialize();
 
         // Validate transaction ID
@@ -212,7 +212,7 @@ const ConversionTracking = ((config = {
     // Expose public methods
     return {
         land,
-        trackEvent,
+        track,
         Event,
         setConfig,
     };

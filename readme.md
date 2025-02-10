@@ -21,7 +21,12 @@ This lightweight and efficient tracking solution ensures accurate data collectio
 Include the script in your webpage:
 
 ```html
-TODO
+
+<script src="https://cdn.timebucks.com/build/conversion-tracking.umd.js"></script>
+
+<script>
+    ConversionTracking.land();
+</script>
 ```
 
 ### Using ES6 modules
@@ -29,10 +34,9 @@ TODO
 Import the script in your JavaScript project:
 
 ```javascript
-import ConversionTracking from 'TODO';
+import ConversionTracking from 'conversion-tracking';
 
 ConversionTracking.land();
-
 ```
 
 ## 4. Usage

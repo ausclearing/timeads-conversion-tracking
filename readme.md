@@ -98,4 +98,4 @@ any purpose other than explicitly authorized by TimeAds, is strictly prohibited.
 Unauthorized reproduction or redistribution of this software may result in severe civil and criminal penalties.
 Violators will be prosecuted to the maximum extent possible under the law.
 
-© 2025 TimeAds. All rights reserved.
+© 2025 TimeAds. All rights reserved. 

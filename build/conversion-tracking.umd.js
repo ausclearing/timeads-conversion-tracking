@@ -1,1 +1,139 @@
-(function(d,t){typeof exports=="object"&&typeof module<"u"?module.exports=t():typeof define=="function"&&define.amd?define(t):(d=typeof globalThis<"u"?globalThis:d||self,d.ConversionTracking=t())})(this,function(){"use strict";const d=(()=>{const n=async()=>{try{const s=await crypto.subtle.generateKey({name:"AES-GCM",length:256},!0,["encrypt","decrypt"]),r=await crypto.subtle.exportKey("raw",s);return c(r)}catch(s){throw console.error("Error generating encryption key:",s),s}},i=async s=>{try{const r=y(s);return await crypto.subtle.importKey("raw",r,{name:"AES-GCM"},!0,["encrypt","decrypt"])}catch(r){throw console.error("Error importing encryption key:",r),r}},p=async(s,r)=>{if(!S(s))throw new Error("Invalid Base64 Key");const a=await i(s),e=crypto.getRandomValues(new Uint8Array(12)),o=new TextEncoder().encode(JSON.stringify(r)),u=await crypto.subtle.encrypt({name:"AES-GCM",iv:e},a,o);return{iv:c(e),cipherText:c(u)}},g=async(s,r)=>{try{const a=await i(s),e=y(r.iv),o=y(r.cipherText),u=await crypto.subtle.decrypt({name:"AES-GCM",iv:e},a,o);return JSON.parse(new TextDecoder().decode(u))}catch(a){throw console.error("Error decrypting data:",a),a}},S=s=>{try{return btoa(atob(s))===s}catch{return!1}},c=s=>{const a=new Uint8Array(s).reduce((e,o)=>e+String.fromCharCode(o),"");return btoa(a)},y=s=>{const r=atob(s),a=new Uint8Array(r.length);for(let e=0;e<r.length;e++)a[e]=r.charCodeAt(e);return a.buffer};return{generateKey:n,encrypt:p,decrypt:g}})(),t=(()=>{let n=!1;return{debug:(...c)=>{n&&console.log("[ConversionTracking DEBUG]:",...c)},warn:(...c)=>{n&&console.warn("[ConversionTracking WARNING]:",...c)},error:(...c)=>{console.error("[ConversionTracking ERROR]:",...c)},setDebug:c=>{n=!!c}}})(),l=((n={cookieName:"jdiiwkssl",localStorageKey:"lsoqejaiked"})=>({storeInLocalStorage:async(r,a)=>{try{const e=await d.encrypt(r,a);return localStorage.setItem(n.localStorageKey,JSON.stringify(e)),t.debug("Data stored in localStorage."),!0}catch(e){return t.error("Error storing data in localStorage:",e),!1}},retrieveFromLocalStorage:async r=>{try{const a=JSON.parse(localStorage.getItem(n.localStorageKey));if(!a)return t.debug("No data found in localStorage."),null;const e=await d.decrypt(r,a);return t.debug("Data retrieved and decrypted from localStorage."),e}catch(a){return t.error("Error retrieving data from localStorage:",a),null}},storeInCookies:async r=>{const a=n.cookieName+"=";try{return document.cookie=`${a}${btoa(JSON.stringify(r))}; Secure; SameSite=Strict; path=/;`,t.debug("Data stored in cookies."),!0}catch(e){return t.error("Error storing data in cookies:",e),!1}},retrieveFromCookies:async()=>{try{const r=n.cookieName+"=",a=document.cookie.split("; ").find(o=>o.startsWith(r));if(!a)return t.debug("No data found in cookies."),null;const e=JSON.parse(atob(a.split("=")[1]));return t.debug("Data retrieved and decrypted from cookies."),e}catch(r){return t.error("Error retrieving data from cookies:",r),null}},checkCookieSupport:()=>{try{document.cookie="yourock=1; SameSite=Strict; path=/;";const r=document.cookie.indexOf("yourock=")!==-1;return r&&(document.cookie="yourock=; SameSite=Strict; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;"),r}catch{return!1}},checkLocalStorageSupport:()=>{try{const r="__yourock__";return localStorage.setItem(r,"1"),localStorage.removeItem(r),!0}catch(r){return t.error("Error checking localStorage support:",r),!1}},setConfig:r=>{n={cookieName:r.cookieName!==void 0?r.cookieName:n.cookieName,localStorageKey:r.localStorageKey!==void 0?r.localStorageKey:n.localStorageKey}}}))(),m={PURCHASE:"purchase",SIGNUP:"signup",VIEW_ITEM:"view_item"};return((n={debug:!1,sessionIdParam:"thurin",endPoint:"http://127.0.0.1/api/track"})=>{t.setDebug(n.debug);let i={};const p=e=>{n={debug:e.debug!==void 0?e.debug:n.debug,sessionIdParam:e.sessionIdParam!==void 0?e.sessionIdParam:n.sessionIdParam,endPoint:e.endPoint!==void 0?e.endPoint:n.endPoint},l.setConfig(n),t.setDebug(n.debug),t.debug("Configuration updated:",n)},g=e=>{fetch(n.endPoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(e)}).then(o=>o.json()).then(o=>{t.debug("Data sent to server:",o)}).catch(o=>{t.debug("Error sending data to server:",o)})},S=()=>new URLSearchParams(window.location.search).get(n.sessionIdParam)||null,c=()=>{if(t.debug("Initializing ConversionTracking..."),t.debug("Checking cookies support..."),!l.checkCookieSupport())throw t.error("Cookies are not supported. Conversion tracking may not work as expected."),new Error("Cookies are not supported.");if(t.debug("Checking localStorage support..."),!l.checkLocalStorageSupport())throw t.error("LocalStorage is not supported. Conversion tracking may not work as expected."),new Error("LocalStorage is not supported.")},y=()=>Math.random().toString(36).substring(2,15)+Math.random().toString(36).substring(2,15),s=e=>{const o=[];return"event"in e?typeof e.event!="string"?o.push("event must be a string."):e.event.length<5&&o.push("event must be at least 5 characters."):o.push("event is required."),e.value!==void 0&&(typeof e.value!="number"||isNaN(e.value))&&o.push("value must be a valid float (number)."),e.tags!==void 0&&(Array.isArray(e.tags)?e.tags.length>3?o.push("tags can contain at most 3 items."):e.tags.forEach((u,h)=>{typeof u!="string"?o.push(`tags[${h}] must be a string.`):u.length>50&&o.push(`tags[${h}] cannot exceed 50 characters.`)}):o.push("tags must be an array.")),{isValid:o.length===0,errors:o}};return{land:async()=>{c(),i.landed_at=new Date().toISOString();const e=S();if(!e){t.warn("Session ID not found in URL query parameters.");return}i.session_id=e,t.debug("Landing recorded at:",i.landed_at,"Session ID:",i.session_id),i.transaction_id=y(),t.debug("Generated transaction ID:",i.transaction_id);const o=await d.generateKey();if(t.debug("Generated key:",o),!await l.storeInCookies(o)){t.error("Error storing key in cookies.");return}if(!await l.storeInLocalStorage(o,i)){t.error("Error storing data in localStorage.");return}const u={event:"landed",...i};g(u)},trackEvent:async(e,o={})=>{if(c(),typeof e!="string"||e.length===0||e.length>200){t.error("Invalid transaction ID");return}const u=await l.retrieveFromCookies();if(!u){t.error("Error retrieving key from cookies.");return}const h=await l.retrieveFromLocalStorage(u);if(!h){t.error("Error retrieving data from LocalStorage.");return}const{isValid:f,errors:b}=s(o);if(!f){t.error("Validation errors:",b);return}const k={...o,transaction_id:e,landed_at:new Date().toISOString(),session_id:h.session_id};t.debug("Event tracked:",k),g(k)},Event:m,setConfig:p}})()});
+(function(global, factory) {
+  typeof exports === "object" && typeof module !== "undefined" ? module.exports = factory() : typeof define === "function" && define.amd ? define(factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, global.TimeAdsTracking = factory());
+})(this, (function() {
+  "use strict";
+  const PARAM = "ta_clickid";
+  const STORE_KEY = "ta_conv";
+  const MAX_TRANSACTION_LENGTH = 80;
+  const MAX_TAGS = 3;
+  const MAX_TAG_LENGTH = 50;
+  const MAX_CUSTOM_EVENT_LENGTH = 100;
+  const byteLength = (value) => new TextEncoder().encode(value).length;
+  const MAX_VALUE = 1e5;
+  const EVENTS = ["landed", "purchase", "signup", "custom"];
+  function createTracker() {
+    const script = document.currentScript;
+    let debug = !!(script == null ? void 0 : script.hasAttribute("data-debug"));
+    let endpoint = "";
+    try {
+      endpoint = new URL("/track", script.src).href;
+    } catch {
+    }
+    let pendingLanding = null;
+    function log(...args) {
+      var _a;
+      if (debug) (_a = window.console) == null ? void 0 : _a.debug("[TimeAds]", ...args);
+    }
+    function load() {
+      try {
+        return JSON.parse(window.localStorage.getItem(STORE_KEY));
+      } catch {
+        return null;
+      }
+    }
+    function save(state) {
+      try {
+        window.localStorage.setItem(STORE_KEY, JSON.stringify(state));
+        return true;
+      } catch {
+        log("Storage unavailable; tracking is disabled.");
+        return false;
+      }
+    }
+    async function post(payload) {
+      if (!endpoint) {
+        log("Configure the tracking endpoint first.");
+        return false;
+      }
+      try {
+        const response = await window.fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          keepalive: true
+        });
+        log("Beacon status", response.status);
+        return response.ok || response.status === 409;
+      } catch {
+        log("Beacon request failed; call again to retry.");
+        return false;
+      }
+    }
+    async function land() {
+      let token;
+      try {
+        token = new URLSearchParams(window.location.search).get(PARAM);
+      } catch {
+        return false;
+      }
+      if (!token) return false;
+      let state = load();
+      if ((state == null ? void 0 : state.token) === token && state.landed) return true;
+      if ((pendingLanding == null ? void 0 : pendingLanding.token) === token) return pendingLanding.promise;
+      if ((state == null ? void 0 : state.token) !== token) {
+        state = { token, transactionId: `ta-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`, landed: false };
+      }
+      if (!save(state)) return false;
+      const promise = post({ click_id: token, transaction_id: state.transactionId, event: "landed" }).then((ok) => {
+        var _a;
+        if (ok && ((_a = load()) == null ? void 0 : _a.token) === token) save({ ...state, landed: true });
+        if ((pendingLanding == null ? void 0 : pendingLanding.token) === token) pendingLanding = null;
+        return ok;
+      });
+      pendingLanding = { token, promise };
+      return promise;
+    }
+    async function track(transactionId, options = {}) {
+      var _a;
+      const token = (_a = load()) == null ? void 0 : _a.token;
+      if (!token) return false;
+      if (typeof transactionId !== "string" || !transactionId.trim() || byteLength(transactionId) > MAX_TRANSACTION_LENGTH) return false;
+      if (!options || typeof options.event !== "string" || !options.event.trim()) return false;
+      if (options.event === "update") return false;
+      const payload = { click_id: token, transaction_id: transactionId, event: options.event };
+      if (!EVENTS.includes(payload.event)) {
+        payload.event_custom = payload.event;
+        payload.event = "custom";
+      } else if (payload.event === "custom") {
+        if (typeof options.event_custom !== "string" || !options.event_custom.trim()) return false;
+        payload.event_custom = options.event_custom;
+      }
+      if (payload.event_custom && byteLength(payload.event_custom) > MAX_CUSTOM_EVENT_LENGTH) return false;
+      if (options.value !== void 0) {
+        if (!["number", "string"].includes(typeof options.value) || String(options.value).trim() === "") return false;
+        const value = Number(options.value);
+        if (!Number.isFinite(value) || value < 0 || value > MAX_VALUE) return false;
+        payload.value = String(options.value);
+      }
+      if (payload.event === "purchase" && !(Number(payload.value) > 0)) return false;
+      if (options.tags !== void 0) {
+        if (!Array.isArray(options.tags) || options.tags.length > MAX_TAGS || options.tags.some((t) => typeof t !== "string" || byteLength(t) > MAX_TAG_LENGTH)) return false;
+        payload.tags = options.tags;
+      }
+      return post(payload);
+    }
+    const api = {
+      land,
+      track,
+      token: () => {
+        var _a;
+        return ((_a = load()) == null ? void 0 : _a.token) ?? null;
+      },
+      configure(options = {}) {
+        if (options.endpoint !== void 0) {
+          const url = new URL(options.endpoint);
+          if (url.protocol !== "https:") throw new Error("Tracking endpoint must use HTTPS");
+          endpoint = url.href;
+        }
+        if (options.debug !== void 0) debug = !!options.debug;
+        return land();
+      }
+    };
+    window.TimeAdsTracking = api;
+    void land();
+    document.dispatchEvent(new CustomEvent("timeads:ready"));
+    return api;
+  }
+  const conversionTracking = typeof window === "undefined" ? null : createTracker();
+  return conversionTracking;
+}));

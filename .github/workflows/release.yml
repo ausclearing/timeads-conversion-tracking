@@ -1,0 +1,44 @@
+name: Test and release tracker
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Verify committed bundles
+        run: git diff --exit-code -- build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tracker
+          path: build/*.js
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: tracker
+          path: build
+      - name: Publish versioned artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "${GITHUB_REF_NAME}" = "v$(node -p 'JSON.parse(require("fs").readFileSync("package.json")).version')"
+          sha256sum build/*.js > build/SHA256SUMS
+          gh release create "$GITHUB_REF_NAME" build/*.js build/SHA256SUMS --verify-tag --generate-notes

@@ -1,19 +1,14 @@
-import {defineConfig} from 'vite';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
-    build: {
-        lib: {
-            entry: './index.js',
-            name: 'ConversionTracking',
-            fileName: (format) => `conversion-tracking.${format}.js`,
-            formats: ['es', 'umd', 'iife'],
-        },
-        outDir: 'build',
+  build: {
+    lib: {
+      entry: './index.js',
+      name: 'TimeAdsTracking',
+      fileName: format => `conversion-tracking.${format}.js`,
+      formats: ['es', 'umd', 'iife'],
     },
-    define: {
-        __SESSION_ID_PARAM__: JSON.stringify("thurin"),
-        __USER_DATA_KEY__: JSON.stringify("siegfried"),
-        __END_POINT__: JSON.stringify("http://127.0.0.1/api/track"), // TODO: Update this to live server
-        __DEBUG__: false,
-    },
+    minify: false,
+    outDir: 'build',
+  },
 });

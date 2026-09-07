@@ -1,15 +1,16 @@
 {
-  "name": "TimeadsConversionTracking",
-  "version": "1.0.0",
-  "description": "",
+  "name": "timeads-conversion-tracking",
+  "version": "2.0.0",
+  "description": "Public TimeAds browser conversion tracker",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run build && node --test",
     "build": "vite build",
     "build:watch": "vite build --watch"
   },
   "private": true,
   "devDependencies": {
     "vite": "^6.0.11"
-  }
+  },
+  "type": "module"
 }

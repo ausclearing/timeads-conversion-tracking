@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>TimeAds conversion example</title>
+<script async src="https://YOUR-TRACKING-ORIGIN/t.js"></script>
+<h1>Conversion page</h1>
+<p id="result">Waiting for tracker…</p>
+<script>
+async function recordConversion() {
+  // Replace with your actual order ID, reusing it on retries and refreshes.
+  const accepted = await TimeAdsTracking.track("EXAMPLE-ORDER-123", {
+    event: "purchase", value: "18.57", tags: ["example"]
+  });
+  document.getElementById("result").textContent = accepted
+    ? "Accepted or already recorded. Check TimeAds Statistics."
+    : "Not recorded. Check the token, Network tab and TimeAds Hits Log.";
+}
+if (window.TimeAdsTracking) recordConversion();
+else document.addEventListener("timeads:ready", recordConversion, { once: true });
+</script>
+</html>
